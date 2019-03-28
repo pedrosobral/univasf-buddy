@@ -8,6 +8,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/observer.dart';
 
 import 'package:flare_flutter/flare_actor.dart';
+import 'package:flutter_buddy/pages/notifications_configuration.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import 'package:flutter_buddy/widgets/loading_news.dart';
@@ -41,12 +42,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Univasf Buddy',
       theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          color: Colors.white,
-          iconTheme: IconThemeData(
-            color: Colors.black38,
-          ),
-        ),
+        primaryColor: Colors.white,
+        accentColor: Colors.blue,
       ),
       home: Home(),
       navigatorObservers: [
@@ -103,11 +100,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.settings),
-                  color: Colors.black38,
+                  color: Colors.blue,
                   tooltip: 'Configurações',
-                  onPressed: () {
-                    _showAboutDialog(context);
-                  },
+                  onPressed: () => _showBottomSheet(context),
                 ),
               ],
             ),
@@ -140,8 +135,42 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                ListTile(
+                  leading: Icon(Icons.notifications),
+                  title: Text('Configurar notificações'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (BuildContext context) {
+                        return NotificationsConfiguration();
+                      }),
+                    ).then((value) => Navigator.pop(context));
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.info_outline),
+                  title: Text('Sobre o Univasf Buddy'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showAboutDialog(context);
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   void _showAboutDialog(BuildContext context) {
-    return showAboutDialog(
+    showAboutDialog(
       context: context,
       applicationName: 'UNIVASF BUDDY',
       applicationVersion: 'v201917032002',
@@ -345,7 +374,7 @@ class _DetailsPageState extends State<DetailsPage> {
             snap: true,
             title: Text(
               'Detalhes',
-              style: TextStyle(color: Colors.black54, fontFamily: 'Lato'),
+              style: TextStyle(color: Colors.black, fontFamily: 'Lato'),
             ),
             actions: <Widget>[
               IconButton(

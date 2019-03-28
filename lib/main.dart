@@ -106,23 +106,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   color: Colors.black38,
                   tooltip: 'Configurações',
                   onPressed: () {
-                    showAboutDialog(
-                      context: context,
-                      applicationName: 'UNIVASF BUDDY',
-                      applicationVersion: 'v201917032002',
-                      applicationLegalese: '@2019 Pedro Henrique',
-                      children: [
-                        Text(
-                            '\nBem vindo ao novo aplicativo Univasf Buddy.\n\nNas próximas semanas estaremos adicionando novas funcionalidades.\n'),
-                        OutlineButton(
-                          onPressed: () {
-                            launch(
-                                'mailto:pedrosobralxv@gmail.com?subject=Sobre o Univasf Buddy&body=Olá Pedro Henrique,');
-                          },
-                          child: Text('ENVIAR CRÍTICA OU SUGESTÕES'),
-                        )
-                      ],
-                    );
+                    _showAboutDialog(context);
                   },
                 ),
               ],
@@ -153,6 +137,26 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               },
             )),
       ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    return showAboutDialog(
+      context: context,
+      applicationName: 'UNIVASF BUDDY',
+      applicationVersion: 'v201917032002',
+      applicationLegalese: '@2019 Pedro Henrique',
+      children: [
+        Text(
+            '\nBem vindo ao novo aplicativo Univasf Buddy.\n\nNas próximas semanas estaremos adicionando novas funcionalidades.\n'),
+        OutlineButton(
+          onPressed: () {
+            launch(
+                'mailto:pedrosobralxv@gmail.com?subject=Sobre o Univasf Buddy&body=Olá Pedro Henrique,');
+          },
+          child: Text('ENVIAR CRÍTICA OU SUGESTÕES'),
+        )
+      ],
     );
   }
 

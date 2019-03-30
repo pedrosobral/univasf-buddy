@@ -8,7 +8,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/observer.dart';
 
 import 'package:flare_flutter/flare_actor.dart';
+import 'package:flutter_buddy/blocs/settings_bloc.dart';
 import 'package:flutter_buddy/pages/notifications_configuration.dart';
+import 'package:flutter_buddy/services/settings_service.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import 'package:flutter_buddy/widgets/loading_news.dart';
@@ -31,7 +33,6 @@ class MyApp extends StatelessWidget {
 
   MyApp() {
     timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
-    _firebaseMessaging.subscribeToTopic('news_notifications');
     _firebaseMessaging.getToken().then((token) {
       print(token);
     });
@@ -66,6 +67,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   AnimationController controller;
   Animation animation;
 
+  final settingsBloc =
+      SettingsBloc(notificationsService: NotificationsService());
+
   Stream<DocumentSnapshot> _data;
 
   Stream<DocumentSnapshot> getNews() {
@@ -75,6 +79,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+
+    settingsBloc.init();
 
     controller =
         AnimationController(duration: Duration(seconds: 3), vsync: this);
@@ -150,7 +156,9 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (BuildContext context) {
-                        return NotificationsConfiguration();
+                        return NotificationsConfiguration(
+                          settingsBloc: settingsBloc,
+                        );
                       }),
                     ).then((value) => Navigator.pop(context));
                   },
@@ -225,6 +233,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         return LoadingNews();
       },
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+
+    settingsBloc.dispose();
   }
 }
 

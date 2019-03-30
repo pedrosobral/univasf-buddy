@@ -106,7 +106,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.settings),
-                  color: Colors.blue,
+                  color: Colors.black,
                   tooltip: 'Configurações',
                   onPressed: () => _showBottomSheet(context),
                 ),
@@ -198,15 +198,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildTitle() {
-    var value = 50.0;
+    var logoHeight = 50.0;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         Container(
           padding: EdgeInsets.only(bottom: 4),
-          height: value,
-          width: value * 1.65,
+          height: logoHeight,
+          width: logoHeight * 1.65,
           child: FlareActor(
             'asset/animation.flr',
             animation: 'go',

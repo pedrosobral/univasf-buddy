@@ -443,11 +443,12 @@ class _DetailsPageState extends State<DetailsPage> {
 
   Widget _buildHtml() {
     return Html(
-      padding: EdgeInsets.only(left: 16, right: 16, bottom: 16),
-      defaultTextStyle: TextStyle(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+      defaultTextStyle: const TextStyle(
         height: 1.2,
-        fontSize: 15.0,
+        fontSize: 16.0,
       ),
+      useRichText: true,
       data: text,
       onLinkTap: (link) => _launchURL(link),
     );

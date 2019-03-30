@@ -374,12 +374,6 @@ class _DetailsPageState extends State<DetailsPage> {
   Widget build(BuildContext context) {
     _scaffoldContext = context;
 
-    if (loading) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     return NestedScrollView(
       physics: BouncingScrollPhysics(),
       headerSliverBuilder: (BuildContext _context, bool innerBoxIsScrolled) {
@@ -411,7 +405,11 @@ class _DetailsPageState extends State<DetailsPage> {
           ),
         ];
       },
-      body: _buildPageView(context),
+      body: loading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : _buildPageView(context),
     );
   }
 

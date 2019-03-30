@@ -288,13 +288,11 @@ class NewsCard extends StatelessWidget {
 }
 
 class DetailsPage extends StatefulWidget {
-  final Widget child;
   final String url;
   final String title;
 
   DetailsPage({
     Key key,
-    this.child,
     @required this.url,
     @required this.title,
   }) : super(key: key);
@@ -310,6 +308,7 @@ class _DetailsPageState extends State<DetailsPage> {
   BuildContext _scaffoldContext;
 
   String text;
+  String publishDate;
   Set<String> images = {};
   bool loading = true;
 
@@ -330,7 +329,10 @@ class _DetailsPageState extends State<DetailsPage> {
       var document = parse(response.body);
 
       var mainContent =
-          document.querySelector("div[property='rnews:articleBody']");
+          document.querySelector("div[property='rnews:articleBody']").innerHtml;
+
+      var publish =
+          document.querySelector("span[property='rnews:datePublished']").text;
 
       var imgs =
           document.querySelectorAll("img[property='rnews:thumbnailUrl']");
@@ -341,7 +343,8 @@ class _DetailsPageState extends State<DetailsPage> {
       }
 
       setState(() {
-        text = mainContent.innerHtml;
+        text = mainContent;
+        publishDate = publish;
         images = imgList;
       });
 
@@ -417,6 +420,7 @@ class _DetailsPageState extends State<DetailsPage> {
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
             padding: EdgeInsets.only(left: 16, right: 16, top: 16),
@@ -428,10 +432,23 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
             ),
           ),
+          _buildDatetimeInfo(),
           images.length > 0 ? _buildImages() : Container(),
           text != null ? _buildHtml() : _showLoadError(),
         ],
       ),
+    );
+  }
+
+  Padding _buildDatetimeInfo() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 16),
+      child: text != null
+          ? Text(
+              'Publicado $publishDate',
+              style: TextStyle(color: Colors.black54),
+            )
+          : Container(),
     );
   }
 

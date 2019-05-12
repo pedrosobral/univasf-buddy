@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_buddy/main.dart';
+
+import 'package:flutter_buddy/widgets/news_card.dart';
 
 class NewsPage extends StatelessWidget {
   final List<dynamic> data;

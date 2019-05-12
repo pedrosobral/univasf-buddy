@@ -11,6 +11,7 @@ import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter_buddy/blocs/settings_bloc.dart';
 import 'package:flutter_buddy/models/data_meal.dart';
 import 'package:flutter_buddy/models/meal_card_data.dart';
+import 'package:flutter_buddy/pages/news_page.dart';
 import 'package:flutter_buddy/pages/notifications_configuration.dart';
 import 'package:flutter_buddy/services/settings_service.dart';
 import 'package:flutter_buddy/widgets/card_meal.dart';
@@ -140,25 +141,52 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Widget _buildNews() {
     return Container(
-        margin: EdgeInsets.only(top: 0),
-        child: StreamBuilder(
-          stream: _data,
-          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildLoadingListView();
-            }
+      child: StreamBuilder(
+        stream: _data,
+        builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildLoadingListView();
+          }
 
-            List<dynamic> latest = snapshot.data.data['data'];
+          List<dynamic> latest = snapshot.data.data['data'];
 
-            return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: latest.sublist(0, 3).map((item) {
-                  var time = DateTime.parse('${item['datetime']}');
-                  print(time);
-                  return NewsCard(news: item, time: time);
-                }).toList());
-          },
-        ));
+          return Column(mainAxisSize: MainAxisSize.min, children: [
+            ListTile(
+              selected: false,
+              title: Text(
+                'Últimas notícias',
+                style: TextStyle(
+                  fontFamily: 'Lato',
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            ...latest.sublist(0, 3).map((item) {
+              var time = DateTime.parse('${item['datetime']}');
+              return NewsCard(news: item, time: time);
+            }).toList(),
+            Divider(height: 0),
+            SizedBox(
+              width: double.infinity,
+              height: 58,
+              child: FlatButton(
+                color: Colors.white,
+                child: Text(
+                  'Ler mais notícias',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                onPressed: () {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (context) {
+                    return NewsPage(data: latest);
+                  }));
+                },
+              ),
+            )
+          ]);
+        },
+      ),
+    );
   }
 
   _buildMeals() {
@@ -207,31 +235,41 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               time: "${meal.day} aberto das ${meal.dinner.time}",
             );
 
-            return Container(
-              height: 160,
-              child: PageView(
-                controller: _pageController,
-                children: <Widget>[
-                  CardMeal(
-                    meal: breakfast,
-                    data: baseData,
-                    initialTabIndex: initialIndex,
-                    initialTileIndex: 0,
+            return Column(
+              children: <Widget>[
+                ListTile(
+                  title: Text(
+                    'Cardápio semanal',
+                    style: TextStyle(fontFamily: 'Lato'),
                   ),
-                  CardMeal(
-                    meal: lunch,
-                    data: baseData,
-                    initialTabIndex: initialIndex,
-                    initialTileIndex: 1,
+                ),
+                Container(
+                  height: 160,
+                  child: PageView(
+                    controller: _pageController,
+                    children: <Widget>[
+                      CardMeal(
+                        meal: breakfast,
+                        data: baseData,
+                        initialTabIndex: initialIndex,
+                        initialTileIndex: 0,
+                      ),
+                      CardMeal(
+                        meal: lunch,
+                        data: baseData,
+                        initialTabIndex: initialIndex,
+                        initialTileIndex: 1,
+                      ),
+                      CardMeal(
+                        meal: dinner,
+                        data: baseData,
+                        initialTabIndex: initialIndex,
+                        initialTileIndex: 2,
+                      ),
+                    ],
                   ),
-                  CardMeal(
-                    meal: dinner,
-                    data: baseData,
-                    initialTabIndex: initialIndex,
-                    initialTileIndex: 2,
-                  ),
-                ],
-              ),
+                ),
+              ],
             );
           }),
     );
@@ -350,7 +388,8 @@ class NewsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.0),
+      margin: EdgeInsets.all(0),
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: InkWell(
         splashColor: Colors.blue.withAlpha(30),
@@ -475,10 +514,6 @@ class _DetailsPageState extends State<DetailsPage> {
               floating: true,
               pinned: false,
               snap: true,
-              title: Text(
-                'Detalhes',
-                style: TextStyle(color: Colors.black, fontFamily: 'Lato'),
-              ),
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.share),

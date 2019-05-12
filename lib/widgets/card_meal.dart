@@ -23,13 +23,18 @@ class CardMeal extends StatelessWidget {
       child: InkWell(
         splashColor: Colors.blue.withAlpha(30),
         onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-            return WeeklyMenuPage(
-              data: this.data,
-              initialTabIndex: initialTabIndex,
-              initialTileIndex: initialTileIndex,
-            );
-          }));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) {
+                return WeeklyMenuPage(
+                  data: this.data,
+                  initialTabIndex: initialTabIndex,
+                  initialTileIndex: initialTileIndex,
+                );
+              },
+              settings: RouteSettings(name: 'WeeklyMenuPage'),
+            ),
+          );
         },
         child: Column(
           mainAxisSize: MainAxisSize.min,

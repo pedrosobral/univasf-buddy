@@ -26,16 +26,12 @@ void main() => runApp(MyApp());
 const locale = 'pt_BR';
 
 class MyApp extends StatelessWidget {
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   static FirebaseAnalytics analytics = FirebaseAnalytics();
   static FirebaseAnalyticsObserver observer =
       FirebaseAnalyticsObserver(analytics: analytics);
 
   MyApp() {
     timeago.setLocaleMessages('pt_BR', timeago.PtBrMessages());
-    _firebaseMessaging.getToken().then((token) {
-      print(token);
-    });
   }
 
   @override
@@ -146,6 +142,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
           List<dynamic> latest = snapshot.data.data['data'];
 
+          final topNews = <Widget>[];
+          latest.sublist(0, 3).asMap().forEach((i, v) {
+            var time = DateTime.parse('${v['datetime']}');
+            topNews.add(
+              NewsCard(
+                data: latest,
+                news: v,
+                time: time,
+                initialIndex: i,
+              ),
+            );
+          });
+
           return Column(mainAxisSize: MainAxisSize.min, children: [
             ListTile(
               selected: false,
@@ -157,10 +166,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 ),
               ),
             ),
-            ...latest.sublist(0, 3).map((item) {
-              var time = DateTime.parse('${item['datetime']}');
-              return NewsCard(news: item, time: time);
-            }).toList(),
+            ...topNews,
             Divider(height: 0),
             SizedBox(
               width: double.infinity,
@@ -172,10 +178,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   style: TextStyle(color: Colors.blue),
                 ),
                 onPressed: () {
-                  Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (context) {
-                    return NewsPage(data: latest);
-                  }));
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return NewsPage(data: latest.sublist(0, 20));
+                      },
+                      settings: RouteSettings(name: 'NewsListPage'),
+                    ),
+                  );
                 },
               ),
             )
@@ -285,11 +295,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (BuildContext context) {
-                        return NotificationsConfiguration(
-                          settingsBloc: settingsBloc,
-                        );
-                      }),
+                      MaterialPageRoute(
+                          builder: (BuildContext context) {
+                            return NotificationsConfiguration(
+                              settingsBloc: settingsBloc,
+                            );
+                          },
+                          settings:
+                              RouteSettings(name: 'NotificationsConfigPage')),
                     ).then((value) => Navigator.pop(context));
                   },
                 ),

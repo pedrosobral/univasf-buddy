@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_buddy/widgets/news_card.dart';
 
 class NewsPage extends StatelessWidget {
@@ -19,8 +18,13 @@ class NewsPage extends StatelessWidget {
       body: ListView.builder(
         itemCount: 20,
         itemBuilder: (context, index) {
-          var time = DateTime.parse('${data[index]['datetime']}');
-          return NewsCard(news: data[index], time: time);
+          final time = DateTime.parse('${data[index]['datetime']}');
+          return NewsCard(
+            news: data[index],
+            time: time,
+            data: data,
+            initialIndex: index,
+          );
         },
       ),
     );

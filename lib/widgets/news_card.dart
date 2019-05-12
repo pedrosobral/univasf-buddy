@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_buddy/pages/news_datails_builder.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:flutter_buddy/pages/news_details.dart';
-
 class NewsCard extends StatelessWidget {
+  final news;
+  final DateTime time;
+  final List<dynamic> data;
+  final int initialIndex;
+
   const NewsCard({
     Key key,
     @required this.news,
     @required this.time,
+    @required this.data,
+    @required this.initialIndex,
   }) : super(key: key);
-
-  final news;
-  final DateTime time;
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +36,17 @@ class NewsCard extends StatelessWidget {
           subtitle:
               Text(timeago.format(time, locale: 'pt_BR', allowFromNow: true)),
           onTap: () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return DetailsPage(
-                title: news['title'],
-                url: news['url'],
-              );
-            }));
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return NewsDetailsBuilder(
+                    data: data,
+                    initialIndex: initialIndex,
+                  );
+                },
+                settings: RouteSettings(name: 'NewsDetailsPage'),
+              ),
+            );
           },
         ),
       ),

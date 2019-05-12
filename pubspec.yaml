@@ -19,7 +19,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   cloud_firestore: ^0.9.5+2
   firebase_messaging: ^4.0.0+1
   firebase_analytics: ^2.0.3
@@ -62,7 +62,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-   - asset/images/univasf.png
+   - asset/images/
    - asset/animation.flr
 
   # An image asset can refer to one or more resolution-specific "variants", see

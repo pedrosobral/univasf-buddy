@@ -9,8 +9,11 @@ import 'package:firebase_analytics/observer.dart';
 
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flutter_buddy/blocs/settings_bloc.dart';
+import 'package:flutter_buddy/models/data_meal.dart';
+import 'package:flutter_buddy/models/meal_card_data.dart';
 import 'package:flutter_buddy/pages/notifications_configuration.dart';
 import 'package:flutter_buddy/services/settings_service.dart';
+import 'package:flutter_buddy/widgets/card_meal.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import 'package:flutter_buddy/widgets/loading_news.dart';
@@ -65,15 +68,22 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   final Firestore firestore = Firestore.instance;
   AnimationController controller;
+  final PageController _pageController =
+      PageController(viewportFraction: 0.8, initialPage: 1);
   Animation animation;
 
   final settingsBloc =
       SettingsBloc(notificationsService: NotificationsService());
 
   Stream<DocumentSnapshot> _data;
+  Stream<DocumentSnapshot> _weeklyMenuData;
 
   Stream<DocumentSnapshot> getNews() {
     return firestore.collection('news').document('latest').snapshots();
+  }
+
+  Stream<DocumentSnapshot> getWeeklyMenuData() {
+    return firestore.collection('cardapio').document('latest').snapshots();
   }
 
   @override
@@ -88,6 +98,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     animation = Tween(begin: 0.0, end: 1.0).animate(controller);
 
     _data = getNews();
+    _weeklyMenuData = getWeeklyMenuData();
 
     controller.forward();
   }
@@ -114,30 +125,115 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             ),
           ];
         },
-        body: Container(
-            margin: EdgeInsets.only(top: 0),
-            child: StreamBuilder(
-              stream: _data,
-              builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildLoadingListView();
-                }
-
-                List<dynamic> latest = snapshot.data.data['data'];
-
-                return ListView.builder(
-                  physics: BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(top: 0),
-                  itemCount: latest.length,
-                  itemBuilder: (context, index) {
-                    var time = DateTime.parse('${latest[index]['datetime']}');
-                    print(time);
-                    return NewsCard(news: latest[index], time: time);
-                  },
-                );
-              },
-            )),
+        body: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _buildNews(),
+              _buildMeals(),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildNews() {
+    return Container(
+        margin: EdgeInsets.only(top: 0),
+        child: StreamBuilder(
+          stream: _data,
+          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildLoadingListView();
+            }
+
+            List<dynamic> latest = snapshot.data.data['data'];
+
+            return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: latest.sublist(0, 3).map((item) {
+                  var time = DateTime.parse('${item['datetime']}');
+                  print(time);
+                  return NewsCard(news: item, time: time);
+                }).toList());
+          },
+        ));
+  }
+
+  _buildMeals() {
+    return Container(
+      margin: EdgeInsets.only(top: 0),
+      child: StreamBuilder(
+          stream: _weeklyMenuData,
+          builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Container();
+            }
+
+            var baseData = DataMeal.fromFirestore(snapshot.data.data);
+            var data = baseData.data;
+
+            var weekendDays = [DateTime.saturday, DateTime.sunday];
+            var today = new DateTime.now().weekday;
+
+            var initialIndex =
+                weekendDays.contains(today) ? DateTime.monday : today;
+
+            var meal = data[initialIndex.toString()];
+
+            var breakfast = new MealCardData(
+              location: meal['breakfast'].location,
+              image: meal.breakfast.data[4].image,
+              description: "${meal.breakfast.data[4].description}",
+              meal: meal.breakfast.data[4].meal,
+              time: "${meal.day} aberto das ${meal.breakfast.time}",
+            );
+
+            var lunch = new MealCardData(
+              location: meal.lunch.location,
+              image: meal.lunch.data[3].image,
+              description:
+                  "${meal.lunch.data[3].description}\n${meal.lunch.data[4].description}",
+              meal: meal.lunch.data[3].meal,
+              time: "${meal.day} aberto das ${meal.lunch.time}",
+            );
+
+            var dinner = new MealCardData(
+              location: meal.dinner.location,
+              image: meal.dinner.data[3].image,
+              description: "${meal.dinner.data[3].description}",
+              meal: meal.dinner.data[3].meal,
+              time: "${meal.day} aberto das ${meal.dinner.time}",
+            );
+
+            return Container(
+              height: 160,
+              child: PageView(
+                controller: _pageController,
+                children: <Widget>[
+                  CardMeal(
+                    meal: breakfast,
+                    data: baseData,
+                    initialTabIndex: initialIndex,
+                    initialTileIndex: 0,
+                  ),
+                  CardMeal(
+                    meal: lunch,
+                    data: baseData,
+                    initialTabIndex: initialIndex,
+                    initialTileIndex: 1,
+                  ),
+                  CardMeal(
+                    meal: dinner,
+                    data: baseData,
+                    initialTabIndex: initialIndex,
+                    initialTileIndex: 2,
+                  ),
+                ],
+              ),
+            );
+          }),
     );
   }
 
@@ -226,13 +322,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
-  ListView _buildLoadingListView() {
-    return ListView.builder(
-      itemCount: 10,
-      physics: BouncingScrollPhysics(),
-      itemBuilder: (context, index) {
-        return LoadingNews();
-      },
+  Widget _buildLoadingListView() {
+    return Column(
+      children:
+          List<int>.generate(3, (i) => i).map((i) => LoadingNews()).toList(),
     );
   }
 
@@ -273,11 +366,9 @@ class NewsCard extends StatelessWidget {
               Text(timeago.format(time, locale: 'pt_BR', allowFromNow: true)),
           onTap: () {
             Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              return Scaffold(
-                body: DetailsPage(
-                  title: news['title'],
-                  url: news['url'],
-                ),
+              return DetailsPage(
+                title: news['title'],
+                url: news['url'],
               );
             }));
           },
@@ -302,11 +393,11 @@ class DetailsPage extends StatefulWidget {
 
 class _DetailsPageState extends State<DetailsPage> {
   var client = Client();
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   final snackBar = SnackBar(
       content: Text(
           'Ocorreu um erro ao carregar os detalhes da notícia.\n Verifique sua conexão com a internet.'));
-  BuildContext _scaffoldContext;
-
   String text;
   String publishDate;
   Set<String> images = {};
@@ -370,55 +461,54 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   _showErrorMessage() {
-    Scaffold.of(_scaffoldContext).showSnackBar(snackBar);
+    _scaffoldKey.currentState.showSnackBar(this.snackBar);
   }
 
   @override
   Widget build(BuildContext context) {
-    _scaffoldContext = context;
-
-    return NestedScrollView(
-      physics: BouncingScrollPhysics(),
-      headerSliverBuilder: (BuildContext _context, bool innerBoxIsScrolled) {
-        return <Widget>[
-          SliverAppBar(
-            floating: true,
-            pinned: false,
-            snap: true,
-            title: Text(
-              'Detalhes',
-              style: TextStyle(color: Colors.black, fontFamily: 'Lato'),
+    return Scaffold(
+      key: _scaffoldKey,
+      body: NestedScrollView(
+        headerSliverBuilder: (BuildContext _context, bool innerBoxIsScrolled) {
+          return <Widget>[
+            SliverAppBar(
+              floating: true,
+              pinned: false,
+              snap: true,
+              title: Text(
+                'Detalhes',
+                style: TextStyle(color: Colors.black, fontFamily: 'Lato'),
+              ),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.share),
+                  tooltip: 'Compartilhar',
+                  onPressed: () {
+                    Share.share(widget.url);
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.open_in_browser),
+                  tooltip: 'Abrir no navegador',
+                  onPressed: () {
+                    _launchURL(widget.url);
+                  },
+                ),
+              ],
             ),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(Icons.share),
-                tooltip: 'Compartilhar',
-                onPressed: () {
-                  Share.share(widget.url);
-                },
-              ),
-              IconButton(
-                icon: Icon(Icons.open_in_browser),
-                tooltip: 'Abrir no navegador',
-                onPressed: () {
-                  _launchURL(widget.url);
-                },
-              ),
-            ],
-          ),
-        ];
-      },
-      body: loading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : _buildPageView(context),
+          ];
+        },
+        body: loading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : _buildPageView(context),
+      ),
     );
   }
 
   Widget _buildPageView(context) {
     return SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

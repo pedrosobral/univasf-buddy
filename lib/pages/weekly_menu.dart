@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_buddy/models/data_meal.dart';
 
+import 'news_datails_builder.dart';
+
+const CARDAPIO_URL =
+    'http://portais.univasf.edu.br/proae/restaurante-universitario/cardapio';
+
 class WeeklyMenuPage extends StatefulWidget {
   final DataMeal data;
   final int initialTabIndex;
@@ -43,6 +48,15 @@ class _WeeklyMenuPageState extends State<WeeklyMenuPage> {
         appBar: AppBar(
           bottom: TabBar(tabs: tabs),
           title: Text('Cardápio semanal'),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.open_in_browser),
+              tooltip: 'Abrir no navegador',
+              onPressed: () {
+                launchURL(CARDAPIO_URL);
+              },
+            ),
+          ],
         ),
         body: TabBarView(children: children),
       ),

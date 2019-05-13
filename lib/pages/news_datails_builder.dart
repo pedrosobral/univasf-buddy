@@ -62,11 +62,12 @@ class _NewsDetailsBuilderState extends State<NewsDetailsBuilder> {
             },
           ),
           IconButton(
-              icon: Icon(Icons.open_in_browser),
-              tooltip: 'Abrir no navegador',
-              onPressed: () {
-                launchURL(currentURL);
-              })
+            icon: Icon(Icons.open_in_browser),
+            tooltip: 'Abrir no navegador',
+            onPressed: () {
+              launchURL(currentURL);
+            },
+          )
         ],
       ),
       body: buildPageView(),

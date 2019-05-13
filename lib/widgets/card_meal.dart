@@ -43,6 +43,7 @@ class CardMeal extends StatelessWidget {
               title: Text(
                 meal.location,
                 maxLines: 1,
+                style: TextStyle(fontFamily: 'Montserrat'),
               ),
               subtitle: Text(
                 meal.time,

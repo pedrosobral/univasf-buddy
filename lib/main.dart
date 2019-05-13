@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:firebase_analytics/observer.dart';
 
